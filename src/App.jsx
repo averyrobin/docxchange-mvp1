@@ -1,712 +1,688 @@
-import { useState } from "react";
+import React, { useState } from 'react';
 
-/* ── Tiny Icons ── */
-const ChevronDown = ({ size = 16 }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9" /></svg>
-);
-const ChevronRight = ({ size = 16 }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6" /></svg>
-);
-const UserIcon = ({ size = 16, color }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color || "currentColor"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" />
-  </svg>
-);
-const BuildingIcon = ({ size = 16, color }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color || "currentColor"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <rect x="4" y="2" width="16" height="20" rx="2" /><path d="M9 22v-4h6v4" />
-    <path d="M8 6h.01M16 6h.01M12 6h.01M12 10h.01M12 14h.01M16 10h.01M16 14h.01M8 10h.01M8 14h.01" />
-  </svg>
-);
-const CheckCircle = ({ size = 16 }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="#34a853" stroke="white" strokeWidth="2.5">
-    <circle cx="12" cy="12" r="10" /><polyline points="9 12 11.5 14.5 16 9.5" />
-  </svg>
-);
-const DocIcon = ({ size = 14, color = "#5f6368" }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" />
-  </svg>
-);
-const PersonalIcon = ({ size = 14 }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="#5f6368" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
-    <rect x="8" y="2" width="8" height="4" rx="1" ry="1" />
-  </svg>
-);
-const RelatedPartiesIcon = ({ size = 14, color = "#5f6368" }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" />
-    <path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" />
-  </svg>
-);
-const BusinessInfoIcon = ({ size = 14, complete = false }) => (
-  complete ? <CheckCircle size={size} /> : (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="#5f6368" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
-      <rect x="8" y="2" width="8" height="4" rx="1" ry="1" />
-      <line x1="9" y1="12" x2="15" y2="12" /><line x1="9" y1="16" x2="13" y2="16" />
-    </svg>
-  )
-);
-const SearchIcon = () => (
-  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9aa0a6" strokeWidth="2"><circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" /></svg>
-);
-const DropdownArrow = ({ size = 12 }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9" /></svg>
-);
+const DocXchangeStructuredPrototype = () => {
+  const [currentView, setCurrentView] = useState('home');
+  const [expandedApp, setExpandedApp] = useState(null);
+  const [uploadingDoc, setUploadingDoc] = useState(null);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [dragOverDoc, setDragOverDoc] = useState(null);
+  const [showToast, setShowToast] = useState(false);
+  const [demoState, setDemoState] = useState('fresh');
+  const [docStatuses, setDocStatuses] = useState({});
+  const [previewDoc, setPreviewDoc] = useState(null);
+  const [nudgeData, setNudgeData] = useState(null);
 
-/* ── Reusable Pieces ── */
-const EntityBubble = ({ type, size = 28 }) => {
-  const isBiz = type === "business";
-  return (
-    <div style={{
-      width: size, height: size, borderRadius: isBiz ? 6 : "50%",
-      background: isBiz ? "#e8f0fe" : "#e6f4ea",
-      display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
-      color: isBiz ? "#1967d2" : "#1e8e3e",
-    }}>
-      {isBiz ? <BuildingIcon size={size * 0.5} /> : <UserIcon size={size * 0.5} />}
-    </div>
-  );
-};
+  const applications = [
+    { id: 'onboarding', name: 'Business Onboarding', date: 'Started Jan 15, 2026', taskCount: 3 },
+    { id: 'cre-loan', name: 'CRE Loan', date: 'Started Feb 1, 2026', taskCount: 2 },
+    { id: 'loc', name: 'Line of Credit', date: 'Started Jan 28, 2026', taskCount: 0 },
+  ];
 
-const StatusBadge = ({ status }) => {
+  const requestedDocs = [
+    { id: 'articles', name: 'Articles of Incorporation', description: 'Current filing', entity: 'Port City Coffee', entityIcon: '\u{1F3E2}', context: 'Relationship', contextDetail: 'Business Entity' },
+    { id: 'financial-stmt', name: 'Business Financial Statements', description: 'Year ending 2024', entity: 'Port City Coffee', entityIcon: '\u{1F3E2}', context: 'Relationship', contextDetail: 'Business Entity' },
+    { id: 'tax-return-biz-2024', name: 'Business Tax Return', description: '2024 (or extension if filed)', entity: 'Port City Coffee', entityIcon: '\u{1F3E2}', context: 'Relationship', contextDetail: 'Business Entity' },
+    { id: 'tax-return-biz-2023', name: 'Business Tax Return', description: '2023', entity: 'Port City Coffee', entityIcon: '\u{1F3E2}', context: 'Relationship', contextDetail: 'Business Entity' },
+    { id: 'tax-return-biz-2022', name: 'Business Tax Return', description: '2022', entity: 'Port City Coffee', entityIcon: '\u{1F3E2}', context: 'Relationship', contextDetail: 'Business Entity' },
+    { id: 'bank-stmts', name: 'Bank Statements', description: 'Oct \u2013 Dec 2024 (last 3 months)', entity: 'Port City Coffee', entityIcon: '\u{1F3E2}', context: 'Relationship', contextDetail: 'Business Entity' },
+    { id: 'drivers-license', name: 'Government-Issued Photo ID', description: 'Valid, non-expired', entity: 'Lilliana Jacobs', entityIcon: '\u{1F464}', context: 'Relationship', contextDetail: 'Beneficial Owner' },
+    { id: 'personal-tax-2024', name: 'Personal Tax Return', description: '2024 (or extension if filed)', entity: 'Lilliana Jacobs', entityIcon: '\u{1F464}', context: 'Relationship', contextDetail: 'Beneficial Owner' },
+    { id: 'personal-tax-2023', name: 'Personal Tax Return', description: '2023', entity: 'Lilliana Jacobs', entityIcon: '\u{1F464}', context: 'Relationship', contextDetail: 'Beneficial Owner' },
+    { id: 'purchase-agreement', name: 'Purchase & Sale Agreement', description: 'Fully executed copy', entity: 'CRE Loan \u2014 Port City Coffee', entityIcon: '\u{1F4CB}', context: 'Loan', contextDetail: 'CRE Loan #2026-0134' },
+    { id: 'rent-roll', name: 'Rent Roll', description: 'Current as of Jan 2026', entity: 'CRE Loan \u2014 Port City Coffee', entityIcon: '\u{1F4CB}', context: 'Loan', contextDetail: 'CRE Loan #2026-0134' },
+    { id: 'env-report', name: 'Phase I Environmental Report', description: 'Within last 12 months', entity: 'CRE Loan \u2014 Port City Coffee', entityIcon: '\u{1F4CB}', context: 'Loan', contextDetail: 'CRE Loan #2026-0134' },
+    { id: 'appraisal', name: 'Commercial Real Estate Appraisal', description: 'Within last 12 months', entity: '123 Main St, Wilmington NC', entityIcon: '\u{1F3D7}\uFE0F', context: 'Collateral', contextDetail: 'Property \u2014 123 Main St' },
+    { id: 'title-report', name: 'Title Report', description: 'Current commitment', entity: '123 Main St, Wilmington NC', entityIcon: '\u{1F3D7}\uFE0F', context: 'Collateral', contextDetail: 'Property \u2014 123 Main St' },
+    { id: 'insurance-cert', name: 'Property Insurance Certificate', description: 'Coverage through 2026', entity: '123 Main St, Wilmington NC', entityIcon: '\u{1F3D7}\uFE0F', context: 'Collateral', contextDetail: 'Property \u2014 123 Main St' },
+  ];
+
+  const simulatedFileNames = {};
+  const fileData = [
+    ['articles','AO_PortCity.pdf','1.2 MB'],['financial-stmt','PCC_Financials_2024.pdf','3.4 MB'],
+    ['tax-return-biz-2024','BusinessTaxReturn2024.pdf','2.1 MB'],['tax-return-biz-2023','BusinessTaxReturn2023.pdf','1.9 MB'],
+    ['tax-return-biz-2022','BusinessTaxReturn2022.pdf','1.7 MB'],['bank-stmts','Chase_Statements_Q4.pdf','890 KB'],
+    ['drivers-license','Lilliana_DL.jpg','842 KB'],['personal-tax-2024','1040_Jacobs_2024.pdf','1.8 MB'],
+    ['personal-tax-2023','1040_Jacobs_2023.pdf','1.6 MB'],['purchase-agreement','PSA_123Main.pdf','4.2 MB'],
+    ['rent-roll','RentRoll_123Main.xlsx','340 KB'],['env-report','PhaseI_Environmental.pdf','8.1 MB'],
+    ['appraisal','Appraisal_123Main.pdf','6.7 MB'],['title-report','TitleReport_WilmNC.pdf','2.3 MB'],
+    ['insurance-cert','InsuranceCert_Property.pdf','450 KB'],
+  ];
+  fileData.forEach(([id,name,size]) => { simulatedFileNames[id] = { name, size, date: 'Feb 10, 2026' }; });
+
   const c = {
-    complete: { bg: "#e6f4ea", color: "#1e8e3e", label: "Complete", dot: "#34a853" },
-    in_progress: { bg: "#e8f0fe", color: "#1967d2", label: "In Progress", dot: "#4285f4" },
-    not_started: { bg: "#f1f3f4", color: "#5f6368", label: "Not Started", dot: "#bdc1c6" },
-    needs_review: { bg: "#fef7e0", color: "#b06000", label: "Needs Review", dot: "#f9ab00" },
-  }[status] || { bg: "#f1f3f4", color: "#5f6368", label: "—", dot: "#bdc1c6" };
-  return (
-    <span style={{
-      display: "inline-flex", alignItems: "center", gap: 5,
-      padding: "2px 8px", borderRadius: 4, fontSize: 11.5, fontWeight: 500,
-      background: c.bg, color: c.color,
-    }}>
-      <span style={{ width: 6, height: 6, borderRadius: "50%", background: c.dot }} />
-      {c.label}
-    </span>
-  );
-};
+    primary: '#0B2545', primaryLight: '#134074', accent: '#13A89E', accentLight: '#E8F8F7',
+    surface: '#FAFBFC', white: '#FFFFFF', text: '#1B2A4A', ts: '#5A6B8A', tm: '#8E99AE',
+    border: '#E2E8F0', bl: '#F0F3F7',
+    success: '#10B981', sBg: '#ECFDF5', sBorder: '#A7F3D0',
+    warning: '#F59E0B', wBg: '#FFFBEB', wBorder: '#FDE68A',
+    error: '#EF4444', eBg: '#FEF2F2',
+    pending: '#6366F1', pBg: '#EEF2FF',
+    lBg: '#EFF6FF', lBorder: '#93C5FD', lAccent: '#2563EB',
+    cBg: '#FFF7ED', cBorder: '#FDBA74', cAccent: '#C2410C',
+  };
 
-const DocStatus = ({ collected, total }) => (
-  <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-    <div style={{ width: 40, height: 4, borderRadius: 99, background: "#e8eaed", overflow: "hidden" }}>
-      <div style={{
-        width: `${(collected / total) * 100}%`, height: "100%", borderRadius: 99,
-        background: collected === total ? "#34a853" : "#4285f4",
-      }} />
-    </div>
-    <span style={{ fontSize: 11.5, color: collected === total ? "#1e8e3e" : "#5f6368", fontWeight: 500 }}>
-      {collected}/{total}
-    </span>
-  </div>
-);
+  const appDocs = {
+    'onboarding': requestedDocs.filter(d => d.context === 'Relationship'),
+    'cre-loan': requestedDocs.filter(d => d.context === 'Loan' || d.context === 'Collateral'),
+    'loc': [],
+  };
 
-const OwnershipPill = ({ percentage, type }) => (
-  <span style={{
-    display: "inline-flex", alignItems: "center", gap: 3,
-    padding: "2px 7px", borderRadius: 4, fontSize: 11.5, fontWeight: 600,
-    background: type === "Direct" ? "#e8f0fe" : "#f3e8fd",
-    color: type === "Direct" ? "#1967d2" : "#7b1fa2",
-  }}>
-    {percentage}%
-    <span style={{ fontWeight: 400, fontSize: 10.5, opacity: 0.8 }}>{type}</span>
-  </span>
-);
+  const ctxC = (ctx) => {
+    if (ctx === 'Loan') return { bg: c.lBg, accent: c.lAccent };
+    if (ctx === 'Collateral') return { bg: c.cBg, accent: c.cAccent };
+    return { bg: '#F0FDF4', accent: c.success };
+  };
 
-const NavItem = ({ icon, label, active, indent = 0, onClick }) => (
-  <div onClick={onClick} style={{
-    display: "flex", alignItems: "center", gap: 8,
-    padding: `7px 12px 7px ${16 + indent}px`,
-    fontSize: 13, color: active ? "#1967d2" : "#3c4043",
-    fontWeight: active ? 600 : 400,
-    background: active ? "#e8f0fe" : "transparent",
-    borderLeft: active ? "3px solid #1967d2" : "3px solid transparent",
-    cursor: "pointer", transition: "background 0.12s",
-  }}>
-    <span style={{ display: "flex", flexShrink: 0 }}>{icon}</span>{label}
-  </div>
-);
+  const totalDocs = requestedDocs.length;
+  const getDocStatus = (id) => docStatuses[id] || { status: 'pending' };
+  const uploadedCount = Object.values(docStatuses).filter(s => s.status === 'uploaded').length;
+  const rejectedCount = Object.values(docStatuses).filter(s => s.status === 'rejected').length;
+  const pendingCount = totalDocs - uploadedCount - rejectedCount;
 
-/* ══════════════════════════════════════════
-   TREE VIEW (for business entities)
-   ══════════════════════════════════════════ */
+  const applyDemoState = (state) => {
+    setDemoState(state);
+    setExpandedApp(null);
+    setUploadingDoc(null);
+    setPreviewDoc(null);
+    setNudgeData(null);
 
-const TreeNode = ({ node, isRoot = false, parentConnector = true }) => {
-  const isBiz = node.type === "business";
-  const hasChildren = node.children && node.children.length > 0;
+    const uploadedIds = ['articles','financial-stmt','tax-return-biz-2024','tax-return-biz-2023','tax-return-biz-2022','bank-stmts','drivers-license'];
 
-  return (
-    <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
-      {/* Vertical connector from parent */}
-      {!isRoot && (
-        <div style={{ width: 2, height: 20, background: "#dadce0" }} />
-      )}
+    if (state === 'home' || state === 'fresh') {
+      setCurrentView(state === 'home' ? 'home' : 'docs');
+      setDocStatuses({});
+    } else if (state === 'partial') {
+      setCurrentView('docs');
+      const s = {};
+      uploadedIds.forEach(id => { s[id] = { status: 'uploaded', file: simulatedFileNames[id] }; });
+      setDocStatuses(s);
+    } else if (state === 'rejected') {
+      setCurrentView('docs');
+      const s = {};
+      requestedDocs.forEach(d => { s[d.id] = { status: 'uploaded', file: simulatedFileNames[d.id] }; });
+      s['financial-stmt'] = { status: 'rejected', file: simulatedFileNames['financial-stmt'], reason: 'The uploaded document is from 2022. Please provide financial statements for the year ending 2024.', rejectedBy: 'Krista Shelton', rejectedDate: 'Feb 12, 2026' };
+      s['env-report'] = { status: 'rejected', file: simulatedFileNames['env-report'], reason: 'This appears to be a Phase II report, not Phase I. Please upload the Phase I Environmental Site Assessment.', rejectedBy: 'Krista Shelton', rejectedDate: 'Feb 12, 2026' };
+      setDocStatuses(s);
+    } else if (state === 'complete') {
+      setCurrentView('docs');
+      const s = {};
+      requestedDocs.forEach(d => { s[d.id] = { status: 'uploaded', file: simulatedFileNames[d.id] }; });
+      setDocStatuses(s);
+    } else if (state === 'banker-nudge') {
+      setCurrentView('banker-nudge');
+      const s = {};
+      uploadedIds.forEach(id => { s[id] = { status: 'uploaded', file: simulatedFileNames[id] }; });
+      setDocStatuses(s);
+    } else if (state === 'client-nudged') {
+      setCurrentView('docs');
+      const s = {};
+      uploadedIds.forEach(id => { s[id] = { status: 'uploaded', file: simulatedFileNames[id] }; });
+      setDocStatuses(s);
+      setNudgeData({
+        message: "Hi Lilliana \u2014 we're getting close to finalizing the CRE loan for Port City Coffee! I still need a few documents to move forward. Could you upload these at your earliest convenience?",
+        sentBy: 'Krista Shelton', sentDate: 'Feb 12, 2026', deadline: 'Feb 21, 2026',
+        urgentDocIds: ['purchase-agreement', 'appraisal', 'title-report'],
+      });
+    }
+  };
 
-      {/* Ownership badges above the node */}
-      {node.ownership && (
-        <div style={{
-          display: "flex", alignItems: "center", gap: 6, marginBottom: 4,
-        }}>
-          {node.ownership.map((o, i) => (
-            <div key={i} style={{
-              display: "flex", alignItems: "center", gap: 4,
-              fontSize: 11, fontWeight: 600,
-              color: o.type === "Direct" ? "#1967d2" : "#7b1fa2",
-            }}>
-              <div style={{
-                width: 18, height: 18, borderRadius: "50%",
-                background: o.type === "Direct" ? "#e8f0fe" : "#f3e8fd",
-                display: "flex", alignItems: "center", justifyContent: "center",
-                fontSize: 8,
-              }}>
-                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                  <polyline points="20 6 9 17 4 12" />
-                </svg>
-              </div>
-              <span>{o.percentage}%</span>
-              <span style={{ fontWeight: 400, fontSize: 10, opacity: 0.7 }}>{o.type}</span>
-            </div>
-          ))}
-        </div>
-      )}
+  const simulateUpload = (docId) => {
+    setUploadingDoc(docId); setUploadProgress(0);
+    const iv = setInterval(() => {
+      setUploadProgress(p => {
+        if (p >= 100) { clearInterval(iv); setTimeout(() => {
+          setDocStatuses(prev => ({ ...prev, [docId]: { status: 'uploaded', file: simulatedFileNames[docId] } }));
+          setUploadingDoc(null); setUploadProgress(0); setShowToast(true); setTimeout(() => setShowToast(false), 2500);
+        }, 300); return 100; }
+        return p + Math.random() * 30 + 15;
+      });
+    }, 250);
+  };
 
-      {/* The node card */}
-      <div style={{
-        display: "flex", alignItems: "center", gap: 8,
-        padding: "10px 16px",
-        background: "white",
-        border: isRoot ? "2px solid #1967d2" : "1px solid #dadce0",
-        borderRadius: 8,
-        boxShadow: isRoot ? "0 2px 8px rgba(25,103,210,0.1)" : "0 1px 3px rgba(0,0,0,0.04)",
-        minWidth: 160,
-        cursor: "pointer",
-        transition: "border-color 0.15s, box-shadow 0.15s",
-      }}>
-        <div style={{
-          width: 30, height: 30, borderRadius: isBiz ? 6 : "50%",
-          background: isBiz ? "#e8f0fe" : "#e6f4ea",
-          display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
-        }}>
-          {isBiz
-            ? <BuildingIcon size={14} color="#1967d2" />
-            : <UserIcon size={14} color="#1e8e3e" />
-          }
-        </div>
-        <div>
-          <div style={{ fontSize: 13, fontWeight: 600, color: "#202124", whiteSpace: "nowrap" }}>{node.name}</div>
-          {node.role && (
-            <div style={{ fontSize: 11, color: "#80868b", marginTop: 1 }}>Role: {node.role}</div>
-          )}
-        </div>
-        <div style={{ marginLeft: 8, color: "#9aa0a6" }}>
-          <DropdownArrow size={12} />
-        </div>
+  const removeUpload = (docId) => { setDocStatuses(prev => { const n = { ...prev }; delete n[docId]; return n; }); };
+
+  // ==================== HEADER ====================
+  const Header = () => (
+    <header style={{ backgroundColor: c.primary, padding: '0 24px', height: '56px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+        <div style={{ width: '28px', height: '28px', borderRadius: '6px', background: `linear-gradient(135deg, ${c.accent}, #0EA5E9)`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '14px', fontWeight: '800', color: 'white' }}>n</div>
+        <span style={{ color: 'white', fontSize: '15px', fontWeight: '600' }}>First National Bank</span>
       </div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+        <span style={{ color: 'rgba(255,255,255,0.7)', fontSize: '13px' }}>Lilliana Jacobs</span>
+        <div style={{ width: '32px', height: '32px', borderRadius: '50%', backgroundColor: c.accent, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontSize: '13px', fontWeight: '700' }}>LJ</div>
+      </div>
+    </header>
+  );
 
-      {/* Children */}
-      {hasChildren && (
-        <>
-          <div style={{ width: 2, height: 20, background: "#dadce0" }} />
-          <div style={{
-            display: "flex", gap: 0, position: "relative",
-          }}>
-            {/* Horizontal connector line */}
-            {node.children.length > 1 && (
-              <div style={{
-                position: "absolute",
-                top: 0,
-                left: "calc(50% - " + ((node.children.length - 1) * 100) + "px)",
-                right: "calc(50% - " + ((node.children.length - 1) * 100) + "px)",
-                height: 2,
-                background: "#dadce0",
-              }} />
-            )}
-            {/* Actually, let's use a simpler horizontal line approach */}
-            <div style={{ display: "flex", gap: 32, position: "relative" }}>
-              {node.children.length > 1 && (
-                <div style={{
-                  position: "absolute",
-                  top: 0,
-                  left: "50%",
-                  right: "50%",
-                  height: 0,
-                }}>
-                  {/* We'll draw the horizontal bar spanning all children */}
+  const StatusBadge = ({ status }) => {
+    const cfg = { pending: { label: 'To Do', bg: c.pBg, color: c.pending }, uploaded: { label: 'Submitted', bg: c.sBg, color: c.success }, rejected: { label: 'Re-upload', bg: c.eBg, color: c.error } }[status] || { label: 'To Do', bg: c.pBg, color: c.pending };
+    return <span style={{ padding: '3px 9px', borderRadius: '16px', fontSize: '11px', fontWeight: '600', backgroundColor: cfg.bg, color: cfg.color }}>{cfg.label}</span>;
+  };
+
+  // ==================== HOME DASHBOARD ====================
+  const HomeView = () => (
+    <div style={{ minHeight: 'calc(100vh - 56px)' }}>
+      <div style={{ backgroundColor: c.primary, padding: '40px 24px 48px', textAlign: 'center' }}>
+        <div style={{ width: '48px', height: '48px', borderRadius: '50%', backgroundColor: 'rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
+          <div style={{ width: '32px', height: '32px', borderRadius: '6px', background: `linear-gradient(135deg, ${c.accent}, #0EA5E9)`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '16px', fontWeight: '800', color: 'white' }}>n</div>
+        </div>
+        <p style={{ fontSize: '14px', color: 'rgba(255,255,255,0.6)', margin: '0 0 4px' }}>Good morning, Lilliana</p>
+        <h1 style={{ fontSize: '26px', fontWeight: '700', color: 'white', margin: 0, fontFamily: "'Instrument Serif', Georgia, serif" }}>Where would you like to continue?</h1>
+      </div>
+      <div style={{ maxWidth: '520px', margin: '-24px auto 0', padding: '0 20px 40px' }}>
+        {applications.map(app => {
+          const docs = appDocs[app.id] || [];
+          const isExp = expandedApp === app.id;
+          const hasDocs = docs.length > 0;
+          const done = docs.filter(d => getDocStatus(d.id).status === 'uploaded').length;
+          const rej = docs.filter(d => getDocStatus(d.id).status === 'rejected').length;
+          const pend = docs.length - done - rej;
+          return (
+            <div key={app.id} style={{ borderRadius: '12px', overflow: 'hidden', backgroundColor: c.white, border: `1px solid ${rej > 0 ? '#FECACA' : c.border}`, marginBottom: '10px', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
+              <div onClick={() => hasDocs && setExpandedApp(isExp ? null : app.id)} style={{ padding: '16px 18px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: hasDocs ? 'pointer' : 'default', borderBottom: isExp ? `1px solid ${c.bl}` : 'none' }}>
+                <div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '3px' }}>
+                    <p style={{ fontSize: '15px', fontWeight: '600', color: c.text, margin: 0 }}>{app.name}</p>
+                    {pend > 0 && <span style={{ backgroundColor: c.error, color: 'white', fontSize: '10px', fontWeight: '700', padding: '2px 7px', borderRadius: '8px' }}>{pend} Docs</span>}
+                    {rej > 0 && <span style={{ backgroundColor: c.error, color: 'white', fontSize: '10px', fontWeight: '700', padding: '2px 7px', borderRadius: '8px' }}>{rej} Rejected</span>}
+                    {app.taskCount > 0 && <span style={{ backgroundColor: c.pending, color: 'white', fontSize: '10px', fontWeight: '700', padding: '2px 7px', borderRadius: '8px' }}>{app.taskCount} Tasks</span>}
+                    {hasDocs && pend === 0 && rej === 0 && <span style={{ backgroundColor: c.success, color: 'white', fontSize: '10px', fontWeight: '700', padding: '2px 7px', borderRadius: '8px' }}>Complete</span>}
+                  </div>
+                  <p style={{ fontSize: '12px', color: c.tm, margin: 0 }}>{app.date}</p>
+                </div>
+                <span style={{ color: c.tm, fontSize: '16px', transform: isExp ? 'rotate(90deg)' : 'rotate(0)', transition: 'transform 0.2s', display: 'inline-block' }}>{'\u203A'}</span>
+              </div>
+              {isExp && hasDocs && (
+                <div style={{ padding: '4px 0' }}>
+                  {['Relationship','Loan','Collateral'].map(ctx => {
+                    const cd = docs.filter(d => d.context === ctx);
+                    if (!cd.length) return null;
+                    const cc = ctxC(ctx);
+                    return (<div key={ctx}>
+                      <div style={{ padding: '6px 18px', backgroundColor: cc.bg, display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <span style={{ fontSize: '10px', fontWeight: '700', color: cc.accent, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{ctx}</span>
+                        <span style={{ fontSize: '10px', color: c.tm }}>{'\u00B7'} {cd.length} docs</span>
+                      </div>
+                      {Object.entries(cd.reduce((g,d) => { if(!g[d.entity]) g[d.entity]={icon:d.entityIcon,docs:[]}; g[d.entity].docs.push(d); return g; },{})).map(([ent,gr]) => (
+                        <div key={ent} style={{ padding: '6px 18px 4px' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '2px' }}>
+                            <span style={{ fontSize: '13px' }}>{gr.icon}</span>
+                            <span style={{ fontSize: '12px', fontWeight: '600', color: c.text }}>{ent}</span>
+                          </div>
+                          {gr.docs.map(doc => { const st = getDocStatus(doc.id); return (
+                            <div key={doc.id} style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '3px 0 3px 20px' }}>
+                              <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: st.status === 'uploaded' ? c.success : st.status === 'rejected' ? c.error : c.pending, flexShrink: 0 }} />
+                              <span style={{ fontSize: '12px', color: c.ts }}>{doc.name}</span>
+                              {doc.description && <span style={{ fontSize: '11px', color: c.tm }}>{'\u2014'} {doc.description}</span>}
+                              <span style={{ fontSize: '10px', fontWeight: '500', marginLeft: 'auto', color: st.status === 'uploaded' ? c.success : st.status === 'rejected' ? c.error : c.pending }}>
+                                {st.status === 'uploaded' ? 'Done' : st.status === 'rejected' ? 'Re-upload' : 'To Do'}
+                              </span>
+                            </div>
+                          ); })}
+                        </div>
+                      ))}
+                    </div>);
+                  })}
+                  <div style={{ padding: '10px 18px', borderTop: `1px solid ${c.bl}` }}>
+                    <button onClick={e => { e.stopPropagation(); setCurrentView('docs'); }} style={{ width: '100%', padding: '8px', borderRadius: '8px', border: `1px dashed ${c.accent}`, backgroundColor: c.accentLight, color: c.accent, fontSize: '12px', fontWeight: '600', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>{'\u2191'} Upload documents</button>
+                  </div>
                 </div>
               )}
-              {node.children.map((child, idx) => (
-                <div key={idx} style={{ display: "flex", flexDirection: "column", alignItems: "center", position: "relative" }}>
-                  {node.children.length > 1 && (
-                    <div style={{
-                      position: "absolute", top: -2,
-                      left: idx === 0 ? "50%" : 0,
-                      right: idx === node.children.length - 1 ? "50%" : 0,
-                      height: 2, background: "#dadce0",
-                    }} />
-                  )}
-                  <TreeNode node={child} />
+            </div>
+          );
+        })}
+        <div onClick={() => setCurrentView('docs')} style={{ borderRadius: '12px', padding: '16px 18px', backgroundColor: c.white, border: `1px solid ${rejectedCount > 0 ? '#FECACA' : c.border}`, cursor: 'pointer', marginBottom: '10px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '3px' }}>
+              <p style={{ fontSize: '15px', fontWeight: '600', color: c.text, margin: 0 }}>Documents</p>
+              {(pendingCount + rejectedCount) > 0 && <span style={{ backgroundColor: c.error, color: 'white', fontSize: '10px', fontWeight: '700', padding: '2px 7px', borderRadius: '8px' }}>{pendingCount + rejectedCount} To Do</span>}
+              {pendingCount === 0 && rejectedCount === 0 && <span style={{ backgroundColor: c.success, color: 'white', fontSize: '10px', fontWeight: '700', padding: '2px 7px', borderRadius: '8px' }}>Complete</span>}
+            </div>
+            <p style={{ fontSize: '12px', color: c.tm, margin: 0 }}>{uploadedCount} of {totalDocs} submitted{rejectedCount > 0 ? ` \u00B7 ${rejectedCount} needs attention` : ''}</p>
+          </div>
+          <span style={{ color: c.tm, fontSize: '20px' }}>{'\u203A'}</span>
+        </div>
+        <div style={{ textAlign: 'center', marginTop: '32px' }}>
+          <p style={{ fontSize: '11px', color: c.tm, margin: '0 0 2px' }}>Privacy Policy | Terms & Conditions</p>
+          <p style={{ fontSize: '11px', color: c.tm, margin: 0 }}>Powered by <strong>nCino</strong></p>
+        </div>
+      </div>
+    </div>
+  );
+
+  // ==================== DOCUMENT LIST VIEW ====================
+  const DocsView = () => {
+    const [expandedEntities, setExpandedEntities] = useState({});
+    const toggleEntity = (key) => setExpandedEntities(p => ({ ...p, [key]: !p[key] }));
+    const isOpen = (key) => expandedEntities[key] !== false;
+
+    return (
+      <div style={{ maxWidth: '700px', margin: '0 auto', padding: '28px 20px' }}>
+        <button onClick={() => setCurrentView('home')} style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'none', border: 'none', padding: '4px 0', fontSize: '13px', color: c.ts, cursor: 'pointer', marginBottom: '16px' }}>{'\u2190'} Back to home</button>
+        <h1 style={{ fontSize: '24px', fontWeight: '700', color: c.text, margin: '0 0 6px', fontFamily: "'Instrument Serif', Georgia, serif" }}>Your documents</h1>
+        <p style={{ fontSize: '14px', color: c.ts, margin: '0 0 20px' }}>{uploadedCount} of {totalDocs} submitted{rejectedCount > 0 ? ` \u00B7 ${rejectedCount} needs re-upload` : pendingCount === 0 ? ' \u2014 all done!' : ''}</p>
+
+        <div style={{ height: '4px', borderRadius: '2px', backgroundColor: c.bl, marginBottom: '20px', overflow: 'hidden' }}>
+          <div style={{ height: '100%', borderRadius: '2px', backgroundColor: rejectedCount > 0 ? c.warning : c.accent, width: `${(uploadedCount / totalDocs) * 100}%`, transition: 'width 0.4s' }} />
+        </div>
+
+        {/* Nudge Banner */}
+        {nudgeData && (
+          <div style={{ borderRadius: '12px', border: `1px solid ${c.wBorder}`, backgroundColor: c.wBg, overflow: 'hidden', marginBottom: '20px' }}>
+            <div style={{ padding: '10px 18px', backgroundColor: '#FEF3C7', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: `1px solid ${c.wBorder}` }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span style={{ fontSize: '14px' }}>{'\u23F0'}</span>
+                <span style={{ fontSize: '13px', fontWeight: '600', color: '#92400E' }}>Deadline: {nudgeData.deadline}</span>
+              </div>
+              <span style={{ fontSize: '12px', color: '#92400E', fontWeight: '500' }}>8 days remaining</span>
+            </div>
+            <div style={{ padding: '14px 18px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
+                <div style={{ width: '32px', height: '32px', borderRadius: '50%', backgroundColor: c.primaryLight, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontSize: '11px', fontWeight: '700', flexShrink: 0 }}>KS</div>
+                <div>
+                  <p style={{ fontSize: '13px', fontWeight: '600', color: '#92400E', margin: 0 }}>{nudgeData.sentBy}</p>
+                  <p style={{ fontSize: '11px', color: '#B45309', margin: 0 }}>{nudgeData.sentDate}</p>
+                </div>
+              </div>
+              <p style={{ fontSize: '13px', color: '#78350F', margin: 0, lineHeight: '1.5', paddingLeft: '42px' }}>{nudgeData.message}</p>
+            </div>
+            {nudgeData.urgentDocIds && nudgeData.urgentDocIds.length > 0 && (
+              <div style={{ padding: '10px 18px', borderTop: `1px solid ${c.wBorder}`, display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <span style={{ fontSize: '12px' }}>{'\u26A1'}</span>
+                <span style={{ fontSize: '12px', fontWeight: '600', color: '#92400E' }}>{nudgeData.urgentDocIds.length} documents marked as urgent</span>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Rejected alert */}
+        {rejectedCount > 0 && (
+          <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px', padding: '14px 18px', borderRadius: '10px', backgroundColor: c.eBg, border: '1px solid #FECACA', marginBottom: '20px' }}>
+            <span style={{ fontSize: '18px', lineHeight: 1, flexShrink: 0 }}>{'\u26A0'}</span>
+            <div>
+              <p style={{ fontSize: '14px', fontWeight: '600', color: c.error, margin: '0 0 2px' }}>{rejectedCount} document{rejectedCount > 1 ? 's' : ''} needs re-upload</p>
+              <p style={{ fontSize: '13px', color: '#B91C1C', margin: 0 }}>Your banker has provided feedback below.</p>
+            </div>
+          </div>
+        )}
+
+        {/* Documents by context with accordion */}
+        {['Relationship','Loan','Collateral'].map(ctx => {
+          const docs = requestedDocs.filter(d => d.context === ctx);
+          if (!docs.length) return null;
+          const cc = ctxC(ctx);
+          const ctxUp = docs.filter(d => getDocStatus(d.id).status === 'uploaded').length;
+          const ctxRej = docs.filter(d => getDocStatus(d.id).status === 'rejected').length;
+
+          return (
+            <div key={ctx} style={{ marginBottom: '14px', borderRadius: '12px', border: `1px solid ${ctxRej > 0 ? '#FECACA' : c.border}`, backgroundColor: c.white, overflow: 'hidden' }}>
+              <div style={{ padding: '10px 18px', backgroundColor: cc.bg, borderBottom: `1px solid ${c.bl}`, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span style={{ fontSize: '11px', fontWeight: '700', color: cc.accent, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{ctx} Documents</span>
+                <span style={{ fontSize: '11px', color: c.tm }}>{'\u00B7'} {ctxUp}/{docs.length} submitted</span>
+              </div>
+
+              {Object.entries(docs.reduce((g,d) => { if(!g[d.entity]) g[d.entity]={icon:d.entityIcon,detail:d.contextDetail,docs:[]}; g[d.entity].docs.push(d); return g; },{})).map(([entity, group]) => {
+                const ek = `${ctx}-${entity}`;
+                const open = isOpen(ek);
+                const eu = group.docs.filter(d => getDocStatus(d.id).status === 'uploaded').length;
+                const er = group.docs.filter(d => getDocStatus(d.id).status === 'rejected').length;
+                const ep = group.docs.length - eu - er;
+                const eUrg = nudgeData && nudgeData.urgentDocIds ? group.docs.filter(d => nudgeData.urgentDocIds.includes(d.id) && getDocStatus(d.id).status === 'pending').length : 0;
+                const allDone = ep === 0 && er === 0;
+
+                return (
+                  <div key={entity}>
+                    <div onClick={() => toggleEntity(ek)} style={{ padding: '10px 18px', backgroundColor: '#FAFBFC', borderBottom: `1px solid ${c.bl}`, display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', userSelect: 'none' }}>
+                      <span style={{ color: c.tm, fontSize: '14px', transform: open ? 'rotate(90deg)' : 'rotate(0)', transition: 'transform 0.2s', display: 'inline-block' }}>{'\u203A'}</span>
+                      <span style={{ fontSize: '14px' }}>{group.icon}</span>
+                      <span style={{ fontSize: '13px', fontWeight: '600', color: c.text, flex: 1 }}>{entity}</span>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        {eUrg > 0 && <span style={{ fontSize: '10px', fontWeight: '600', color: '#D97706', backgroundColor: '#FEF3C7', padding: '2px 7px', borderRadius: '8px', border: '1px solid #FDE68A' }}>{'\u26A1'} {eUrg} urgent</span>}
+                        {er > 0 && <span style={{ fontSize: '10px', fontWeight: '600', color: c.error, backgroundColor: c.eBg, padding: '2px 7px', borderRadius: '8px' }}>{er} rejected</span>}
+                        {ep > 0 && eUrg === 0 && <span style={{ fontSize: '10px', fontWeight: '600', color: c.pending, backgroundColor: c.pBg, padding: '2px 7px', borderRadius: '8px' }}>{ep} to do</span>}
+                        {allDone && <span style={{ fontSize: '10px', fontWeight: '600', color: c.success, backgroundColor: c.sBg, padding: '2px 7px', borderRadius: '8px' }}>{eu}/{group.docs.length} done</span>}
+                      </div>
+                    </div>
+
+                    {open && group.docs.map((doc, idx) => {
+                      const st = getDocStatus(doc.id);
+                      const isUpl = uploadingDoc === doc.id;
+                      const isDO = dragOverDoc === doc.id;
+                      const isUrg = nudgeData && nudgeData.urgentDocIds && nudgeData.urgentDocIds.includes(doc.id) && st.status === 'pending';
+
+                      return (
+                        <div key={doc.id} style={{ borderBottom: idx < group.docs.length - 1 ? `1px solid ${c.bl}` : 'none' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '12px 18px 12px 46px' }}>
+                            <div style={{ width: '26px', height: '26px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: '12px', fontWeight: '700',
+                              backgroundColor: st.status === 'uploaded' ? c.sBg : st.status === 'rejected' ? c.eBg : isUrg ? '#FEF3C7' : c.pBg,
+                              color: st.status === 'uploaded' ? c.success : st.status === 'rejected' ? c.error : isUrg ? '#D97706' : c.pending,
+                              border: isUrg ? '2px solid #F59E0B' : 'none',
+                            }}>{st.status === 'uploaded' ? '\u2713' : st.status === 'rejected' ? '!' : isUrg ? '\u26A1' : '\u25CB'}</div>
+                            <div style={{ flex: 1 }}>
+                              <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px' }}>
+                                <p style={{ fontSize: '14px', fontWeight: '500', color: c.text, margin: 0 }}>{doc.name}</p>
+                                {doc.description && <span style={{ fontSize: '11px', color: c.tm }}>{'\u2014'} {doc.description}</span>}
+                              </div>
+                              {st.status === 'uploaded' && st.file && <p style={{ fontSize: '12px', color: c.success, margin: '1px 0 0' }}>{st.file.name} {'\u00B7'} {st.file.size}</p>}
+                              {st.status === 'rejected' && st.file && <p style={{ fontSize: '12px', color: c.error, margin: '1px 0 0' }}>Rejected {'\u00B7'} {st.file.name}</p>}
+                              {isUrg && <p style={{ fontSize: '11px', color: '#D97706', fontWeight: '500', margin: '2px 0 0' }}>Urgent {'\u2014'} requested by {nudgeData.sentBy}</p>}
+                            </div>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                              {isUrg && <span style={{ fontSize: '10px', fontWeight: '600', color: '#D97706', backgroundColor: '#FEF3C7', padding: '2px 7px', borderRadius: '8px', border: '1px solid #FDE68A' }}>Urgent</span>}
+                              <StatusBadge status={st.status} />
+                            </div>
+                          </div>
+
+                          {st.status === 'rejected' && (
+                            <div style={{ padding: '0 18px 12px 46px' }}>
+                              <div style={{ padding: '10px 14px', borderRadius: '8px', backgroundColor: c.eBg, borderLeft: `3px solid ${c.error}`, marginBottom: '10px' }}>
+                                <p style={{ fontSize: '12px', fontWeight: '600', color: c.error, margin: '0 0 4px' }}>Reason from {st.rejectedBy} {'\u00B7'} {st.rejectedDate}</p>
+                                <p style={{ fontSize: '13px', color: '#991B1B', margin: 0, lineHeight: '1.5' }}>{st.reason}</p>
+                              </div>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '8px 12px', borderRadius: '8px', backgroundColor: '#FEF2F2', border: '1px dashed #FECACA', marginBottom: '10px' }}>
+                                <span style={{ fontSize: '14px' }}>{'\u{1F4C4}'}</span>
+                                <p style={{ fontSize: '12px', color: '#991B1B', margin: 0 }}><span style={{ textDecoration: 'line-through' }}>{st.file.name}</span> <em>{'\u2014'} rejected</em></p>
+                              </div>
+                            </div>
+                          )}
+
+                          {(st.status === 'pending' || st.status === 'rejected') && (
+                            <div style={{ padding: '0 18px 14px 46px' }}>
+                              {isUpl ? (
+                                <div style={{ padding: '16px', borderRadius: '10px', backgroundColor: '#F8FAFC', border: `1px solid ${c.border}`, textAlign: 'center' }}>
+                                  <div style={{ height: '6px', borderRadius: '3px', backgroundColor: c.bl, marginBottom: '10px', overflow: 'hidden' }}>
+                                    <div style={{ height: '100%', borderRadius: '3px', backgroundColor: c.accent, width: `${Math.min(uploadProgress, 100)}%`, transition: 'width 0.2s' }} />
+                                  </div>
+                                  <p style={{ fontSize: '12px', color: c.ts, margin: 0 }}>Uploading... {Math.min(Math.round(uploadProgress), 100)}%</p>
+                                </div>
+                              ) : (
+                                <div onDragOver={e => { e.preventDefault(); setDragOverDoc(doc.id); }} onDragLeave={() => setDragOverDoc(null)} onDrop={e => { e.preventDefault(); setDragOverDoc(null); simulateUpload(doc.id); }} onClick={() => simulateUpload(doc.id)}
+                                  style={{ padding: '18px', borderRadius: '10px', border: `2px dashed ${isDO ? c.accent : c.border}`, backgroundColor: isDO ? c.accentLight : '#FAFBFC', textAlign: 'center', cursor: 'pointer', transition: 'all 0.2s' }}>
+                                  <div style={{ width: '32px', height: '32px', borderRadius: '50%', backgroundColor: isDO ? c.accentLight : c.pBg, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 6px', fontSize: '14px' }}>{'\u2191'}</div>
+                                  <p style={{ fontSize: '13px', fontWeight: '500', color: c.text, margin: '0 0 2px' }}>{st.status === 'rejected' ? 'Upload corrected version' : 'Drop file or click to browse'}</p>
+                                  <p style={{ fontSize: '11px', color: c.tm, margin: 0 }}>PDF, JPG, PNG {'\u00B7'} Up to 10 MB</p>
+                                </div>
+                              )}
+                            </div>
+                          )}
+
+                          {st.status === 'uploaded' && (
+                            <div style={{ padding: '0 18px 12px 46px' }}>
+                              <div onClick={() => setPreviewDoc({ doc, file: st.file })} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '8px 12px', borderRadius: '8px', backgroundColor: '#F8FAFC', cursor: 'pointer' }}>
+                                <span style={{ fontSize: '14px' }}>{'\u{1F4C4}'}</span>
+                                <div style={{ flex: 1 }}>
+                                  <p style={{ fontSize: '12px', fontWeight: '500', color: c.accent, margin: 0, textDecoration: 'underline' }}>{st.file.name}</p>
+                                  <p style={{ fontSize: '11px', color: c.tm, margin: '1px 0 0' }}>{st.file.size} {'\u00B7'} Uploaded {st.file.date} {'\u00B7'} Click to preview</p>
+                                </div>
+                                <button onClick={(e) => { e.stopPropagation(); removeUpload(doc.id); }} style={{ background: 'none', border: `1px solid ${c.border}`, borderRadius: '6px', padding: '4px 9px', fontSize: '11px', color: c.error, cursor: 'pointer' }}>Remove</button>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                );
+              })}
+            </div>
+          );
+        })}
+
+        <div style={{ marginTop: '24px', padding: '14px 18px', borderRadius: '10px', backgroundColor: '#F8FAFC', border: `1px solid ${c.bl}`, display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <div style={{ width: '36px', height: '36px', borderRadius: '50%', backgroundColor: c.primaryLight, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontSize: '12px', fontWeight: '700' }}>KS</div>
+          <div>
+            <p style={{ fontSize: '13px', fontWeight: '600', color: c.text, margin: 0 }}>Questions? Contact your banker</p>
+            <p style={{ fontSize: '12px', color: c.ts, margin: 0 }}>Krista Shelton {'\u00B7'} krista.shelton@firstnationalbank.com</p>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  // ==================== BANKER NUDGE VIEW (DocMan Style) ====================
+  const BankerNudgeView = () => {
+    const [selDocs, setSelDocs] = useState([]);
+    const [showModal, setShowModal] = useState(false);
+    const [urgDocs, setUrgDocs] = useState([]);
+    const [msg, setMsg] = useState("Hi Lilliana \u2014 we're getting close to finalizing the CRE loan for Port City Coffee! I still need a few documents to move forward. Could you upload these at your earliest convenience?");
+    const [dl, setDl] = useState('2026-02-21');
+    const [sent, setSent] = useState(false);
+    const [filter, setFilter] = useState('all');
+
+    const sf = { blue: '#0176d3', blueLight: '#eef4ff', text: '#080707', ts: '#706e6b', tm: '#969492', border: '#e5e5e5', bg: '#f3f3f3', white: '#FFFFFF', grayBg: '#f3f3f3', yellow: '#fe9339' };
+
+    const allDocs = requestedDocs.map(d => ({
+      ...d, displayStatus: docStatuses[d.id] && docStatuses[d.id].status === 'uploaded' ? 'IN-FILE' : 'OPEN',
+      category: d.context === 'Relationship' ? (d.entity === 'Port City Coffee' ? 'Business Documentation' : 'Individual Specific Documents') : d.context === 'Loan' ? 'Loan Documentation' : 'Collateral Documentation',
+      lastMod: docStatuses[d.id] && docStatuses[d.id].file ? docStatuses[d.id].file.date : '2/9/2026',
+    }));
+
+    const filtered = filter === 'all' ? allDocs : filter === 'portal' ? allDocs.filter(d => d.displayStatus === 'OPEN') : allDocs.filter(d => d.category === filter);
+    const categories = [...new Set(allDocs.map(d => d.category))];
+    const portalCount = allDocs.filter(d => d.displayStatus === 'OPEN').length;
+
+    if (sent) return (
+      <div style={{ maxWidth: '600px', margin: '0 auto', padding: '60px 20px', textAlign: 'center' }}>
+        <div style={{ width: '56px', height: '56px', borderRadius: '50%', backgroundColor: c.sBg, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px', fontSize: '24px', color: c.success }}>{'\u2713'}</div>
+        <h2 style={{ fontSize: '20px', fontWeight: '700', color: c.text, margin: '0 0 8px' }}>Reminder sent to Lilliana Jacobs</h2>
+        <p style={{ fontSize: '14px', color: c.ts, margin: '0 0 24px' }}>{selDocs.length} documents {'\u00B7'} {urgDocs.filter(id => selDocs.includes(id)).length} urgent {'\u00B7'} Deadline: {new Date(dl).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</p>
+        <button onClick={() => applyDemoState('client-nudged')} style={{ backgroundColor: sf.blue, color: 'white', border: 'none', borderRadius: '4px', padding: '10px 20px', fontSize: '14px', cursor: 'pointer' }}>See client's view {'\u2192'}</button>
+      </div>
+    );
+
+    return (
+      <div style={{ fontFamily: 'Salesforce Sans, Arial, sans-serif', backgroundColor: sf.bg, minHeight: 'calc(100vh - 100px)' }}>
+        <div style={{ backgroundColor: sf.white, padding: '12px 24px', borderBottom: `1px solid ${sf.border}` }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
+            <div style={{ width: '36px', height: '36px', backgroundColor: '#7F8DE1', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <svg width="20" height="20" viewBox="0 0 52 52" fill="white"><path d="M26 2C12.7 2 2 12.7 2 26s10.7 24 24 24 24-10.7 24-24S39.3 2 26 2zm0 36c-6.6 0-12-5.4-12-12s5.4-12 12-12 12 5.4 12 12-5.4 12-12 12z"/></svg>
+            </div>
+            <div><p style={{ fontSize: '11px', color: sf.ts, margin: 0 }}>Relationship</p><h2 style={{ fontSize: '18px', fontWeight: '700', color: sf.text, margin: 0 }}>Port City Coffee</h2></div>
+          </div>
+          <div style={{ display: 'flex', gap: '24px', fontSize: '12px', color: sf.ts }}>
+            <span>Relationship Type: <strong style={{ color: sf.text }}>LLC</strong></span>
+            <span>Status: <strong style={{ color: sf.text }}>Prospect</strong></span>
+            <span>Relationship Owner: <span style={{ color: sf.blue }}>Krista Shelton</span></span>
+          </div>
+        </div>
+        <div style={{ backgroundColor: sf.white, borderBottom: `1px solid ${sf.border}`, padding: '0 24px', display: 'flex' }}>
+          {['Details','Products & Services','Credit Resources','Document Manager','Credit Actions','Collaboration','Review'].map(tab => (
+            <div key={tab} style={{ padding: '10px 16px', fontSize: '13px', cursor: 'pointer', color: tab === 'Document Manager' ? sf.blue : sf.text, fontWeight: tab === 'Document Manager' ? '700' : '400', borderBottom: tab === 'Document Manager' ? `3px solid ${sf.blue}` : '3px solid transparent', marginBottom: '-1px' }}>{tab}</div>
+          ))}
+        </div>
+        <div style={{ display: 'flex' }}>
+          <div style={{ width: '220px', backgroundColor: sf.white, borderRight: `1px solid ${sf.border}`, padding: '16px 0', minHeight: '500px' }}>
+            <div style={{ padding: '0 16px' }}>
+              {[{ key: 'all', label: 'All Documents', ct: allDocs.length }, { key: 'portal', label: 'Customer Portal', ct: portalCount }, { key: 'esign', label: 'E-Signature', ct: 0 }].map(item => (
+                <div key={item.key} onClick={() => setFilter(item.key)} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px', cursor: 'pointer', borderRadius: '4px', backgroundColor: filter === item.key ? sf.blueLight : 'transparent', marginBottom: '2px' }}>
+                  <span style={{ fontSize: '13px', color: filter === item.key ? sf.blue : sf.text, fontWeight: filter === item.key ? '600' : '400' }}>{item.label}</span>
+                  <span style={{ fontSize: '12px', color: sf.ts }}>{item.ct}</span>
                 </div>
               ))}
             </div>
-          </div>
-        </>
-      )}
-    </div>
-  );
-};
-
-/* ── Tree Data ── */
-const LLC_TREE = {
-  name: "Taylor Swift LLC",
-  type: "business",
-  role: null,
-  children: [
-    {
-      name: "Taylor Swift",
-      type: "individual",
-      role: "Owner",
-      ownership: [{ percentage: 50, type: "Direct" }],
-      children: [],
-    },
-    {
-      name: "Swifties Inc.",
-      type: "business",
-      role: "Owner",
-      ownership: [{ percentage: 50, type: "Direct" }],
-      children: [
-        {
-          name: "Taylor Swift",
-          type: "individual",
-          role: "Owner",
-          ownership: [
-            { percentage: 50, type: "Indirect" },
-            { percentage: 100, type: "Direct" },
-          ],
-          children: [],
-        },
-      ],
-    },
-  ],
-};
-
-const SWIFTIES_TREE = {
-  name: "Swifties Inc.",
-  type: "business",
-  role: null,
-  children: [
-    {
-      name: "Taylor Swift",
-      type: "individual",
-      role: "Owner",
-      ownership: [{ percentage: 100, type: "Direct" }],
-      children: [],
-    },
-  ],
-};
-
-const TreeView = ({ title, tree }) => (
-  <div style={{
-    background: "white", borderRadius: 8, border: "1px solid #e0e0e0", overflow: "hidden",
-  }}>
-    <div style={{
-      padding: "14px 16px", borderBottom: "1px solid #e8eaed",
-      display: "flex", alignItems: "center", justifyContent: "space-between",
-    }}>
-      <h2 style={{ margin: 0, fontSize: 16, fontWeight: 700, color: "#202124" }}>Related Parties</h2>
-    </div>
-    <div style={{
-      padding: "32px 24px 40px",
-      display: "flex", justifyContent: "center",
-      overflowX: "auto",
-      minHeight: 300,
-    }}>
-      <TreeNode node={tree} isRoot />
-    </div>
-  </div>
-);
-
-
-/* ══════════════════════════════════════════
-   LIST VIEW (for individuals)
-   ══════════════════════════════════════════ */
-
-const LIST_PARTIES = [
-  {
-    id: 1, name: "Taylor Swift LLC", type: "business", role: "Owner",
-    effectiveOwnership: 100, kycStatus: "in_progress",
-    docsCollected: 2, docsTotal: 4, addedBy: "Banker",
-    paths: [
-      { type: "Direct", percentage: 50 },
-      { type: "Indirect", percentage: 50, via: "Swifties Inc.", viaType: "business" },
-    ],
-  },
-  {
-    id: 2, name: "Swifties Inc.", type: "business", role: "Owner",
-    effectiveOwnership: 100, kycStatus: "complete",
-    docsCollected: 3, docsTotal: 3, addedBy: "Banker",
-    paths: [{ type: "Direct", percentage: 100 }],
-  },
-  {
-    id: 3, name: "Nashville Holdings Group", type: "business", role: "Beneficial Owner",
-    effectiveOwnership: 25, kycStatus: "not_started",
-    docsCollected: 0, docsTotal: 5, addedBy: "Client",
-    paths: [{ type: "Indirect", percentage: 25, via: "Taylor Swift LLC", viaType: "business" }],
-  },
-  {
-    id: 4, name: "Andrea Swift", type: "individual", role: "Authorized Signer",
-    effectiveOwnership: null, kycStatus: "needs_review",
-    docsCollected: 1, docsTotal: 2, addedBy: "Banker",
-    paths: [{ type: "Direct", percentage: null }],
-  },
-];
-
-const PartyRow = ({ party, isLast }) => {
-  const [expanded, setExpanded] = useState(false);
-  const canExpand = party.paths.length > 1 || party.paths.some(p => p.via);
-
-  return (
-    <div style={{ borderBottom: isLast ? "none" : "1px solid #e8eaed" }}>
-      <div
-        onClick={() => canExpand && setExpanded(!expanded)}
-        style={{
-          display: "grid",
-          gridTemplateColumns: "24px 1.5fr 0.7fr 0.7fr 0.6fr 0.5fr 0.45fr",
-          alignItems: "center", padding: "12px 16px",
-          cursor: canExpand ? "pointer" : "default",
-          background: expanded ? "#f8f9fa" : "transparent",
-          transition: "background 0.12s",
-        }}
-        onMouseEnter={e => { if (!expanded) e.currentTarget.style.background = "#f8f9fa"; }}
-        onMouseLeave={e => { if (!expanded) e.currentTarget.style.background = "transparent"; }}
-      >
-        <div style={{ color: "#9aa0a6", display: "flex", alignItems: "center" }}>
-          {canExpand ? (expanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />) : <div style={{ width: 14 }} />}
-        </div>
-        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <EntityBubble type={party.type} size={28} />
-          <div>
-            <div style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 13, fontWeight: 600, color: "#202124" }}>
-              {party.name}
-              <span style={{
-                fontSize: 9.5, fontWeight: 600, padding: "1px 5px", borderRadius: 3,
-                background: party.type === "business" ? "#e8f0fe" : "#e6f4ea",
-                color: party.type === "business" ? "#1967d2" : "#1e8e3e",
-                textTransform: "uppercase", letterSpacing: 0.4,
-              }}>{party.type === "business" ? "BUS" : "IND"}</span>
+            <div style={{ padding: '12px 16px', marginTop: '8px' }}>
+              <div style={{ padding: '8px 12px', borderRadius: '4px', border: `1px solid ${sf.border}`, textAlign: 'center', fontSize: '13px', color: sf.blue, cursor: 'pointer' }}>{'\u2726'} File Staging (0)</div>
             </div>
-            <div style={{ fontSize: 11.5, color: "#80868b", marginTop: 1 }}>{party.role}</div>
-          </div>
-        </div>
-        <div>
-          {party.effectiveOwnership !== null ? (
-            <div>
-              <span style={{ fontSize: 13.5, fontWeight: 700, color: "#202124" }}>{party.effectiveOwnership}%</span>
-              <div style={{ fontSize: 10.5, color: "#9aa0a6" }}>Effective</div>
+            <div style={{ padding: '16px 16px 0', borderTop: `1px solid ${sf.border}`, marginTop: '8px' }}>
+              <p style={{ fontSize: '10px', fontWeight: '700', color: sf.ts, textTransform: 'uppercase', letterSpacing: '0.05em', margin: '0 0 8px' }}>Filter by Categories</p>
+              {categories.map(cat => (
+                <label key={cat} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '4px 0', cursor: 'pointer', fontSize: '12px', color: sf.text }}>
+                  <input type="checkbox" checked={filter === cat} onChange={() => setFilter(filter === cat ? 'all' : cat)} style={{ accentColor: sf.blue }} />{cat}
+                </label>
+              ))}
             </div>
-          ) : <span style={{ color: "#bdc1c6", fontSize: 12 }}>—</span>}
-        </div>
-        <div><StatusBadge status={party.kycStatus} /></div>
-        <div><DocStatus collected={party.docsCollected} total={party.docsTotal} /></div>
-        <div>
-          <div style={{
-            display: "inline-flex", alignItems: "center", gap: 4,
-            fontSize: 11.5, fontWeight: 500,
-            color: party.addedBy === "Client" ? "#7b1fa2" : "#1967d2",
-            background: party.addedBy === "Client" ? "#f3e8fd" : "#e8f0fe",
-            padding: "2px 7px", borderRadius: 4,
-          }}>
-            {party.addedBy === "Client" ? <UserIcon size={10} /> : (
-              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a4 4 0 0 0-8 0v2"/></svg>
-            )}
-            {party.addedBy}
           </div>
-        </div>
-        <div style={{ textAlign: "right" }}>
-          <button onClick={e => e.stopPropagation()} style={{
-            padding: "4px 10px", borderRadius: 4, border: "1px solid #dadce0",
-            background: "white", color: "#1967d2", fontSize: 12, fontWeight: 500, cursor: "pointer",
-          }}>View</button>
-        </div>
-      </div>
-
-      {expanded && (
-        <div style={{ background: "#f1f3f4", borderTop: "1px solid #e8eaed" }}>
-          {party.paths.map((path, i) => (
-            <div key={i} style={{
-              display: "grid",
-              gridTemplateColumns: "24px 1.5fr 0.7fr 0.7fr 0.6fr 0.5fr 0.45fr",
-              alignItems: "center", padding: "9px 16px 9px 44px",
-              borderBottom: i < party.paths.length - 1 ? "1px dashed #dadce0" : "none",
-            }}>
-              <div />
-              <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                <div style={{ width: 16, height: 1, background: "#bdc1c6" }} />
-                {path.via ? (
-                  <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
-                    <span style={{ fontSize: 11.5, color: "#80868b" }}>via</span>
-                    <div style={{
-                      display: "inline-flex", alignItems: "center", gap: 4,
-                      padding: "3px 8px", borderRadius: 4,
-                      background: "white", border: "1px solid #dadce0", cursor: "pointer",
-                    }}
-                      onMouseEnter={e => e.currentTarget.style.borderColor = "#1967d2"}
-                      onMouseLeave={e => e.currentTarget.style.borderColor = "#dadce0"}
-                    >
-                      <EntityBubble type={path.viaType} size={16} />
-                      <span style={{ fontSize: 12, fontWeight: 500, color: "#1967d2" }}>{path.via}</span>
-                    </div>
+          <div style={{ flex: 1, padding: '16px 24px' }}>
+            <div style={{ marginBottom: '12px', padding: '8px 12px', borderRadius: '4px', border: `1px solid ${sf.border}`, backgroundColor: sf.white, display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <svg width="14" height="14" viewBox="0 0 52 52" fill={sf.ts}><path d="M50.4 47.2L37.9 34.7c2.9-3.7 4.6-8.4 4.6-13.5C42.5 9.5 33 0 21.3 0S0 9.5 0 21.2s9.5 21.3 21.3 21.3c5.1 0 9.8-1.7 13.5-4.6l12.5 12.5c.4.4 1 .6 1.6.6s1.2-.2 1.6-.6c.8-.9.8-2.3-.1-3.2z"/></svg>
+              <span style={{ color: sf.tm, fontSize: '13px' }}>Search by document name or details.</span>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <button style={{ padding: '6px 14px', borderRadius: '4px', border: `1px solid ${sf.border}`, backgroundColor: sf.white, fontSize: '13px', color: sf.text, cursor: 'pointer' }}>Actions {'\u25BE'}</button>
+                <span style={{ fontSize: '13px', color: sf.ts }}>{selDocs.length} of {filtered.length} Items Selected</span>
+              </div>
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <button style={{ padding: '6px 14px', borderRadius: '4px', border: `1px solid ${sf.blue}`, backgroundColor: sf.white, fontSize: '13px', color: sf.blue, cursor: 'pointer' }}>Add Placeholder</button>
+                <button style={{ padding: '6px 14px', borderRadius: '4px', border: `1px solid ${sf.blue}`, backgroundColor: sf.white, fontSize: '13px', color: sf.blue, cursor: 'pointer' }}>Upload Files</button>
+                <button onClick={() => selDocs.length > 0 && setShowModal(true)} style={{ padding: '6px 14px', borderRadius: '4px', border: 'none', backgroundColor: selDocs.length > 0 ? sf.blue : sf.border, fontSize: '13px', color: 'white', cursor: selDocs.length > 0 ? 'pointer' : 'default' }}>Send Reminder ({selDocs.length})</button>
+              </div>
+            </div>
+            <div style={{ backgroundColor: sf.white, borderRadius: '4px', border: `1px solid ${sf.border}`, overflow: 'hidden' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '36px 100px 1fr 80px 180px 100px 28px', padding: '8px 12px', borderBottom: `2px solid ${sf.border}`, alignItems: 'center' }}>
+                <input type="checkbox" checked={selDocs.length === filtered.length && filtered.length > 0} onChange={() => setSelDocs(selDocs.length === filtered.length ? [] : filtered.map(d => d.id))} style={{ accentColor: sf.blue, cursor: 'pointer' }} />
+                <span style={{ fontSize: '11px', fontWeight: '700', color: sf.ts, textTransform: 'uppercase' }}>Status</span>
+                <span style={{ fontSize: '11px', fontWeight: '700', color: sf.ts, textTransform: 'uppercase' }}>Name {'\u2191'}</span>
+                <span style={{ fontSize: '11px', fontWeight: '700', color: sf.ts, textTransform: 'uppercase' }}>Year</span>
+                <span style={{ fontSize: '11px', fontWeight: '700', color: sf.ts, textTransform: 'uppercase' }}>Category</span>
+                <span style={{ fontSize: '11px', fontWeight: '700', color: sf.ts, textTransform: 'uppercase' }}>Modified</span>
+                <span></span>
+              </div>
+              {filtered.map((doc, idx) => {
+                const isSel = selDocs.includes(doc.id);
+                return (
+                  <div key={doc.id} style={{ display: 'grid', gridTemplateColumns: '36px 100px 1fr 80px 180px 100px 28px', padding: '10px 12px', borderBottom: idx < filtered.length - 1 ? `1px solid ${sf.border}` : 'none', alignItems: 'center', backgroundColor: isSel ? sf.blueLight : sf.white }}>
+                    <input type="checkbox" checked={isSel} onChange={() => setSelDocs(p => p.includes(doc.id) ? p.filter(x => x !== doc.id) : [...p, doc.id])} style={{ accentColor: sf.blue, cursor: 'pointer' }} />
+                    <span style={{ display: 'inline-flex', padding: '2px 10px', borderRadius: '4px', fontSize: '11px', fontWeight: '700', textTransform: 'uppercase', backgroundColor: doc.displayStatus === 'IN-FILE' ? sf.yellow : sf.white, color: doc.displayStatus === 'IN-FILE' ? sf.white : sf.text, border: `1px solid ${doc.displayStatus === 'IN-FILE' ? sf.yellow : sf.border}` }}>{doc.displayStatus} {'\u25BE'}</span>
+                    <span style={{ fontSize: '13px', color: sf.blue, cursor: 'pointer' }}>{doc.name}</span>
+                    <span style={{ fontSize: '13px', color: sf.text }}>{doc.description && doc.description.match(/\d{4}/) ? doc.description.match(/\d{4}/)[0] : ''}</span>
+                    <span style={{ fontSize: '12px', color: sf.text }}>{doc.category}</span>
+                    <span style={{ fontSize: '12px', color: sf.text }}>{doc.lastMod}</span>
+                    <span style={{ fontSize: '16px', color: sf.ts, cursor: 'pointer' }}>{'\u203A'}</span>
                   </div>
-                ) : (
-                  <span style={{ fontSize: 12, color: "#5f6368" }}>Direct relationship</span>
-                )}
-              </div>
-              <div>
-                {path.percentage !== null
-                  ? <OwnershipPill percentage={path.percentage} type={path.type} />
-                  : <span style={{ fontSize: 11.5, color: "#80868b", fontStyle: "italic" }}>N/A</span>
-                }
-              </div>
-              <div /><div /><div /><div />
+                );
+              })}
             </div>
-          ))}
+          </div>
+        </div>
+
+        {showModal && (
+          <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9000 }}>
+            <div style={{ backgroundColor: sf.white, borderRadius: '8px', width: '100%', maxWidth: '560px', maxHeight: '80vh', overflow: 'hidden', boxShadow: '0 4px 16px rgba(0,0,0,0.2)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 20px', borderBottom: `1px solid ${sf.border}` }}>
+                <div><h2 style={{ fontSize: '18px', fontWeight: '700', color: sf.text, margin: 0 }}>Send Document Reminder</h2><p style={{ fontSize: '12px', color: sf.ts, margin: '2px 0 0' }}>Remind client to upload outstanding documents</p></div>
+                <button onClick={() => setShowModal(false)} style={{ background: 'none', border: 'none', fontSize: '20px', color: sf.ts, cursor: 'pointer' }}>{'\u00D7'}</button>
+              </div>
+              <div style={{ padding: '16px 20px', maxHeight: '50vh', overflowY: 'auto' }}>
+                <div style={{ marginBottom: '16px' }}>
+                  <p style={{ fontSize: '12px', fontWeight: '700', color: sf.text, margin: '0 0 6px' }}>Send to:</p>
+                  <div style={{ padding: '8px 12px', borderRadius: '4px', border: `1px solid ${sf.border}`, backgroundColor: sf.grayBg, fontSize: '13px' }}>Lilliana Jacobs {'\u00B7'} lilliana.jacobs@portcitycoffee.com</div>
+                </div>
+                <div style={{ marginBottom: '16px' }}>
+                  <p style={{ fontSize: '12px', fontWeight: '700', color: sf.text, margin: '0 0 6px' }}>Selected Documents ({selDocs.length})</p>
+                  <div style={{ border: `1px solid ${sf.border}`, borderRadius: '4px', overflow: 'hidden' }}>
+                    {selDocs.map((docId, idx) => {
+                      const doc = requestedDocs.find(d => d.id === docId);
+                      if (!doc) return null;
+                      const isUrg = urgDocs.includes(docId);
+                      return (
+                        <div key={docId} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '8px 12px', borderBottom: idx < selDocs.length - 1 ? `1px solid ${sf.border}` : 'none', backgroundColor: isUrg ? '#FFFBEB' : sf.white }}>
+                          <span style={{ fontSize: '14px' }}>{doc.entityIcon}</span>
+                          <div style={{ flex: 1 }}><p style={{ fontSize: '13px', color: sf.text, margin: 0 }}>{doc.name}</p>{doc.description && <p style={{ fontSize: '11px', color: sf.tm, margin: 0 }}>{doc.description} {'\u00B7'} {doc.entity}</p>}</div>
+                          <button onClick={() => setUrgDocs(p => p.includes(docId) ? p.filter(x => x !== docId) : [...p, docId])} style={{ background: 'none', border: `1px solid ${isUrg ? '#FDE68A' : sf.border}`, borderRadius: '4px', padding: '3px 8px', fontSize: '10px', fontWeight: '600', color: isUrg ? '#D97706' : sf.tm, cursor: 'pointer', backgroundColor: isUrg ? '#FEF3C7' : 'transparent' }}>{isUrg ? '\u26A1 Urgent' : 'Mark urgent'}</button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+                <div style={{ marginBottom: '16px' }}>
+                  <p style={{ fontSize: '12px', fontWeight: '700', color: sf.text, margin: '0 0 6px' }}>Deadline</p>
+                  <input type="date" value={dl} onChange={e => setDl(e.target.value)} style={{ padding: '8px 12px', borderRadius: '4px', border: `1px solid ${sf.border}`, fontSize: '13px', width: '200px' }} />
+                </div>
+                <div>
+                  <p style={{ fontSize: '12px', fontWeight: '700', color: sf.text, margin: '0 0 6px' }}>Message to client (optional)</p>
+                  <textarea value={msg} onChange={e => setMsg(e.target.value)} rows={3} style={{ width: '100%', padding: '8px 12px', borderRadius: '4px', border: `1px solid ${sf.border}`, fontSize: '13px', lineHeight: '1.5', resize: 'vertical', fontFamily: 'inherit' }} />
+                </div>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', padding: '12px 20px', borderTop: `1px solid ${sf.border}`, backgroundColor: sf.grayBg }}>
+                <button onClick={() => setShowModal(false)} style={{ padding: '8px 20px', borderRadius: '4px', border: `1px solid ${sf.border}`, backgroundColor: sf.white, fontSize: '13px', cursor: 'pointer' }}>Cancel</button>
+                <button onClick={() => { setShowModal(false); setSent(true); }} style={{ padding: '8px 20px', borderRadius: '4px', border: 'none', backgroundColor: sf.blue, fontSize: '13px', color: 'white', cursor: 'pointer' }}>{'\u2709'} Send Reminder</button>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  // ==================== MAIN ====================
+  return (
+    <div style={{ fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif", backgroundColor: c.surface, minHeight: '100vh', position: 'relative' }}>
+      <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet" />
+      <Header />
+      <div style={{ backgroundColor: '#F0F3FF', padding: '8px 24px', display: 'flex', alignItems: 'center', gap: '10px', borderBottom: `1px solid ${c.border}`, flexWrap: 'wrap' }}>
+        <span style={{ fontSize: '11px', fontWeight: '700', color: c.primary, letterSpacing: '0.05em', textTransform: 'uppercase' }}>Demo:</span>
+        {[
+          { key: 'home', label: 'Home Dashboard' },
+          { key: 'fresh', label: 'All Pending' },
+          { key: 'partial', label: 'Partial Progress' },
+          { key: 'rejected', label: 'Banker Rejected' },
+          { key: 'complete', label: 'All Submitted' },
+          { key: 'banker-nudge', label: 'Banker: Send Nudge' },
+          { key: 'client-nudged', label: 'Client: Nudge Received' },
+        ].map(({ key, label }) => (
+          <button key={key} onClick={() => applyDemoState(key)} style={{
+            padding: '5px 12px', borderRadius: '6px',
+            border: demoState === key ? `2px solid ${c.primary}` : `1px solid ${c.border}`,
+            backgroundColor: demoState === key ? 'white' : '#F8FAFC',
+            color: demoState === key ? c.primary : c.ts,
+            fontSize: '12px', fontWeight: demoState === key ? '600' : '400', cursor: 'pointer',
+          }}>{label}</button>
+        ))}
+      </div>
+
+      {currentView === 'home' && <HomeView />}
+      {currentView === 'docs' && <DocsView />}
+      {currentView === 'banker-nudge' && <BankerNudgeView />}
+
+      {showToast && (
+        <div style={{ position: 'fixed', bottom: '24px', left: '50%', transform: 'translateX(-50%)', backgroundColor: c.primary, color: 'white', padding: '12px 24px', borderRadius: '10px', boxShadow: '0 8px 24px rgba(0,0,0,0.2)', display: 'flex', alignItems: 'center', gap: '10px', fontSize: '14px', fontWeight: '500', zIndex: 1000 }}>
+          <span style={{ width: '22px', height: '22px', borderRadius: '50%', backgroundColor: c.success, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: '800' }}>{'\u2713'}</span>
+          Document uploaded successfully
+        </div>
+      )}
+
+      {previewDoc && (
+        <div onClick={() => setPreviewDoc(null)} style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 2000, padding: '20px' }}>
+          <div onClick={e => e.stopPropagation()} style={{ backgroundColor: c.white, borderRadius: '12px', width: '100%', maxWidth: '600px', maxHeight: '85vh', overflow: 'hidden', boxShadow: '0 8px 32px rgba(0,0,0,0.3)', display: 'flex', flexDirection: 'column' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 20px', borderBottom: `1px solid ${c.bl}`, flexShrink: 0 }}>
+              <div>
+                <p style={{ fontSize: '15px', fontWeight: '600', color: c.text, margin: '0 0 2px' }}>{previewDoc.doc.name}</p>
+                <p style={{ fontSize: '12px', color: c.tm, margin: 0 }}>{previewDoc.file.name} {'\u00B7'} {previewDoc.file.size} {'\u00B7'} Uploaded {previewDoc.file.date}</p>
+              </div>
+              <button onClick={() => setPreviewDoc(null)} style={{ background: 'none', border: 'none', fontSize: '20px', color: c.tm, cursor: 'pointer' }}>{'\u00D7'}</button>
+            </div>
+            <div style={{ flex: 1, overflow: 'auto', padding: '24px', backgroundColor: '#F3F4F6', display: 'flex', alignItems: 'flex-start', justifyContent: 'center' }}>
+              <div style={{ width: '100%', maxWidth: '480px', backgroundColor: 'white', borderRadius: '4px', boxShadow: '0 2px 8px rgba(0,0,0,0.1)', padding: '40px 36px', minHeight: '400px' }}>
+                <div style={{ textAlign: 'center', marginBottom: '24px' }}>
+                  <p style={{ fontSize: '10px', color: c.tm, margin: '0 0 8px', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Document Preview</p>
+                  <p style={{ fontSize: '18px', fontWeight: '700', color: c.text, margin: '0 0 4px', fontFamily: 'serif' }}>{previewDoc.doc.name}</p>
+                  {previewDoc.doc.description && <p style={{ fontSize: '13px', color: c.tm, margin: 0 }}>{previewDoc.doc.description}</p>}
+                </div>
+                <div style={{ borderTop: `1px solid ${c.border}`, paddingTop: '16px' }}>
+                  {[1,2,3,4,5].map(i => (
+                    <div key={i} style={{ marginBottom: '12px' }}>
+                      <div style={{ height: '10px', backgroundColor: c.bl, borderRadius: '4px', width: `${60 + i * 7}%`, marginBottom: '6px' }} />
+                      <div style={{ height: '10px', backgroundColor: c.bl, borderRadius: '4px', width: `${40 + i * 9}%`, marginBottom: '6px' }} />
+                      <div style={{ height: '10px', backgroundColor: c.bl, borderRadius: '4px', width: `${30 + i * 6}%` }} />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 20px', borderTop: `1px solid ${c.bl}`, backgroundColor: '#F8FAFC', flexShrink: 0 }}>
+              <span style={{ fontSize: '12px', color: c.success, fontWeight: '500' }}>{'\u2713'} Submitted {'\u00B7'} {previewDoc.doc.entity}</span>
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <button onClick={() => { removeUpload(previewDoc.doc.id); setPreviewDoc(null); }} style={{ background: 'none', border: `1px solid ${c.border}`, borderRadius: '8px', padding: '8px 16px', fontSize: '13px', color: c.error, cursor: 'pointer' }}>Remove & re-upload</button>
+                <button onClick={() => setPreviewDoc(null)} style={{ backgroundColor: c.accent, color: 'white', border: 'none', borderRadius: '8px', padding: '8px 16px', fontSize: '13px', fontWeight: '600', cursor: 'pointer' }}>Close</button>
+              </div>
+            </div>
+          </div>
         </div>
       )}
     </div>
   );
 };
 
-const ListView = () => (
-  <div style={{
-    background: "white", borderRadius: 8, border: "1px solid #e0e0e0", overflow: "hidden",
-  }}>
-    <div style={{
-      display: "flex", alignItems: "center", justifyContent: "space-between",
-      padding: "14px 16px", borderBottom: "1px solid #e8eaed",
-    }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-        <h2 style={{ margin: 0, fontSize: 16, fontWeight: 700, color: "#202124" }}>Related Parties</h2>
-        <span style={{
-          fontSize: 11, fontWeight: 600, color: "#5f6368",
-          background: "#f1f3f4", padding: "2px 7px", borderRadius: 99,
-        }}>{LIST_PARTIES.length}</span>
-      </div>
-      <button style={{
-        padding: "6px 14px", borderRadius: 4, border: "none",
-        background: "#1967d2", color: "white", fontSize: 12, fontWeight: 600, cursor: "pointer",
-      }}>+ Add Party</button>
-    </div>
-    <div style={{
-      display: "grid",
-      gridTemplateColumns: "24px 1.5fr 0.7fr 0.7fr 0.6fr 0.5fr 0.45fr",
-      padding: "8px 16px", background: "#f8f9fa", borderBottom: "1px solid #e8eaed",
-      fontSize: 10.5, fontWeight: 600, color: "#80868b",
-      textTransform: "uppercase", letterSpacing: 0.5,
-    }}>
-      <div /><div>Entity</div><div>Ownership</div><div>KYC / KYB</div><div>Docs</div><div>Added By</div><div style={{ textAlign: "right" }}>Actions</div>
-    </div>
-    {LIST_PARTIES.map((p, i) => <PartyRow key={p.id} party={p} isLast={i === LIST_PARTIES.length - 1} />)}
-
-    {/* Legend */}
-    <div style={{
-      display: "flex", alignItems: "center", gap: 14, padding: "10px 16px",
-      borderTop: "1px solid #e8eaed", fontSize: 10.5, color: "#9aa0a6",
-    }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
-        <span style={{ width: 7, height: 7, borderRadius: 2, background: "#e8f0fe" }} /> Direct
-      </div>
-      <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
-        <span style={{ width: 7, height: 7, borderRadius: 2, background: "#f3e8fd" }} /> Indirect
-      </div>
-      <div>Click expandable rows to see ownership paths</div>
-    </div>
-  </div>
-);
-
-
-/* ══════════════════════════════════════════
-   MAIN LAYOUT
-   ══════════════════════════════════════════ */
-
-export default function OnboardingCaseView() {
-  const [activeNav, setActiveNav] = useState("ts-related-parties");
-
-  const contentMap = {
-    "llc-rp": <TreeView title="Taylor Swift LLC" tree={LLC_TREE} />,
-    "si-rp": <TreeView title="Swifties Inc." tree={SWIFTIES_TREE} />,
-    "ts-related-parties": <ListView />,
-  };
-
-  const placeholderContent = (label) => (
-    <div style={{
-      background: "white", borderRadius: 8, border: "1px solid #e0e0e0",
-      padding: "48px 24px", textAlign: "center",
-    }}>
-      <div style={{ fontSize: 14, color: "#80868b" }}>{label}</div>
-    </div>
-  );
-
-  const getContent = () => {
-    if (contentMap[activeNav]) return contentMap[activeNav];
-    const labels = {
-      "case-details": "Case Details",
-      "llc-biz": "Business Information — Taylor Swift LLC",
-      "llc-docs": "Documents — Taylor Swift LLC",
-      "ts-personal": "Personal Details — Taylor Swift",
-      "ts-docs": "Documents — Taylor Swift",
-      "si-biz": "Business Information — Swifties Inc.",
-      "si-docs": "Documents — Swifties Inc.",
-    };
-    return placeholderContent(labels[activeNav] || "Select a section");
-  };
-
-  // Section label for the content header
-  const sectionContext = {
-    "llc-rp": "Taylor Swift LLC",
-    "si-rp": "Swifties Inc.",
-    "ts-related-parties": "Taylor Swift",
-  };
-
-  return (
-    <div style={{
-      fontFamily: "'Salesforce Sans', 'SF Pro Text', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
-      background: "#f3f3f3", minHeight: "100vh", fontSize: 13, color: "#3c4043",
-    }}>
-      {/* ── Top Nav ── */}
-      <div style={{
-        background: "white", borderBottom: "1px solid #e0e0e0",
-        padding: "0 16px", display: "flex", alignItems: "center", height: 44, gap: 24,
-      }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 8, marginRight: 8 }}>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(3,5px)", gap: 3, opacity: 0.4 }}>
-            {[...Array(9)].map((_, i) => <div key={i} style={{ width: 5, height: 5, borderRadius: "50%", background: "#5f6368" }} />)}
-          </div>
-          <span style={{ fontWeight: 700, fontSize: 14, color: "#1967d2", letterSpacing: -0.2 }}>nCino</span>
-        </div>
-        {["Home", "Leads", "Opportunities", "Relationships", "Applications", "Loans", "Deposits", "Onboarding"].map(item => (
-          <span key={item} style={{
-            fontSize: 12.5, color: item === "Onboarding" ? "#1967d2" : "#5f6368",
-            fontWeight: item === "Onboarding" ? 600 : 400, cursor: "pointer", padding: "12px 0",
-            borderBottom: item === "Onboarding" ? "2px solid #1967d2" : "2px solid transparent",
-          }}>{item}</span>
-        ))}
-        <div style={{ marginLeft: "auto" }}>
-          <div style={{
-            display: "flex", alignItems: "center", gap: 6,
-            padding: "5px 12px", borderRadius: 4, background: "#f1f3f4",
-            fontSize: 12, color: "#80868b",
-          }}><SearchIcon /> Search...</div>
-        </div>
-      </div>
-
-      {/* ── Page Header ── */}
-      <div style={{ background: "white", borderBottom: "1px solid #e0e0e0", padding: "16px 24px" }}>
-        <div style={{ fontSize: 12, color: "#80868b", marginBottom: 6, display: "flex", alignItems: "center", gap: 5 }}>
-          <span style={{ color: "#1967d2", cursor: "pointer" }}>All Onboarding</span>
-          <span style={{ color: "#bdc1c6" }}>&gt;</span>
-          <span style={{ color: "#1967d2", cursor: "pointer" }}>Taylor Swift LLC</span>
-        </div>
-        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-          <div style={{
-            width: 36, height: 36, borderRadius: "50%", background: "#e8f0fe",
-            display: "flex", alignItems: "center", justifyContent: "center",
-          }}>
-            <RelatedPartiesIcon size={18} color="#1967d2" />
-          </div>
-          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <span style={{ fontSize: 18, fontWeight: 700, color: "#202124" }}>OC-000006</span>
-            <span style={{
-              fontSize: 11, fontWeight: 600, padding: "2px 8px", borderRadius: 4,
-              background: "#e8f0fe", color: "#1967d2",
-            }}>In Progress</span>
-          </div>
-        </div>
-      </div>
-
-      {/* ── Body ── */}
-      <div style={{ display: "flex", padding: "16px 24px", gap: 16, alignItems: "flex-start" }}>
-
-        {/* Left Nav */}
-        <div style={{
-          width: 220, flexShrink: 0, background: "white",
-          borderRadius: 8, border: "1px solid #e0e0e0", overflow: "hidden",
-        }}>
-          <div style={{ padding: "10px 0 4px" }}>
-            <div style={{ fontSize: 11, fontWeight: 700, color: "#5f6368", textTransform: "uppercase", letterSpacing: 0.5, padding: "0 16px 6px" }}>Overview</div>
-            <NavItem icon={<DocIcon />} label="Case Details" active={activeNav === "case-details"} onClick={() => setActiveNav("case-details")} />
-          </div>
-
-          <div style={{ height: 1, background: "#e8eaed", margin: "4px 12px" }} />
-
-          <div style={{ padding: "8px 0 4px" }}>
-            <div style={{ fontSize: 11, fontWeight: 700, color: "#5f6368", textTransform: "uppercase", letterSpacing: 0.5, padding: "0 16px 6px" }}>Taylor Swift LLC</div>
-            <NavItem icon={<BusinessInfoIcon complete />} label="Business Information" indent={4} active={activeNav === "llc-biz"} onClick={() => setActiveNav("llc-biz")} />
-            <NavItem icon={<DocIcon />} label="Documents" indent={4} active={activeNav === "llc-docs"} onClick={() => setActiveNav("llc-docs")} />
-            <NavItem icon={<RelatedPartiesIcon color={activeNav === "llc-rp" ? "#1967d2" : "#5f6368"} />} label="Related Parties" indent={4} active={activeNav === "llc-rp"} onClick={() => setActiveNav("llc-rp")} />
-          </div>
-
-          <div style={{ height: 1, background: "#e8eaed", margin: "4px 12px" }} />
-
-          <div style={{ padding: "8px 0 4px" }}>
-            <div style={{ fontSize: 11, fontWeight: 700, color: "#5f6368", textTransform: "uppercase", letterSpacing: 0.5, padding: "0 16px 6px" }}>Taylor Swift</div>
-            <NavItem icon={<PersonalIcon />} label="Personal Details" indent={4} active={activeNav === "ts-personal"} onClick={() => setActiveNav("ts-personal")} />
-            <NavItem icon={<DocIcon />} label="Documents" indent={4} active={activeNav === "ts-docs"} onClick={() => setActiveNav("ts-docs")} />
-            <NavItem icon={<RelatedPartiesIcon color={activeNav === "ts-related-parties" ? "#1967d2" : "#5f6368"} />} label="Related Parties" indent={4} active={activeNav === "ts-related-parties"} onClick={() => setActiveNav("ts-related-parties")} />
-          </div>
-
-          <div style={{ height: 1, background: "#e8eaed", margin: "4px 12px" }} />
-
-          <div style={{ padding: "8px 0 8px" }}>
-            <div style={{ fontSize: 11, fontWeight: 700, color: "#5f6368", textTransform: "uppercase", letterSpacing: 0.5, padding: "0 16px 6px" }}>Swifties Inc.</div>
-            <NavItem icon={<BusinessInfoIcon />} label="Business Information" indent={4} active={activeNav === "si-biz"} onClick={() => setActiveNav("si-biz")} />
-            <NavItem icon={<DocIcon />} label="Documents" indent={4} active={activeNav === "si-docs"} onClick={() => setActiveNav("si-docs")} />
-            <NavItem icon={<RelatedPartiesIcon color={activeNav === "si-rp" ? "#1967d2" : "#5f6368"} />} label="Related Parties" indent={4} active={activeNav === "si-rp"} onClick={() => setActiveNav("si-rp")} />
-          </div>
-        </div>
-
-        {/* Main Content */}
-        <div style={{ flex: 1, minWidth: 0 }}>
-          {/* Context breadcrumb for related parties views */}
-          {sectionContext[activeNav] && (
-            <div style={{
-              fontSize: 12, color: "#80868b", marginBottom: 8,
-              display: "flex", alignItems: "center", gap: 5,
-            }}>
-              <span style={{ fontWeight: 500, color: "#5f6368" }}>{sectionContext[activeNav]}</span>
-              <span style={{ color: "#bdc1c6" }}>›</span>
-              <span>Related Parties</span>
-              {activeNav !== "ts-related-parties" && (
-                <span style={{
-                  fontSize: 10, padding: "1px 6px", borderRadius: 3,
-                  background: "#e8f0fe", color: "#1967d2", fontWeight: 600, marginLeft: 4,
-                }}>TREE VIEW</span>
-              )}
-              {activeNav === "ts-related-parties" && (
-                <span style={{
-                  fontSize: 10, padding: "1px 6px", borderRadius: 3,
-                  background: "#e6f4ea", color: "#1e8e3e", fontWeight: 600, marginLeft: 4,
-                }}>LIST VIEW</span>
-              )}
-            </div>
-          )}
-
-          {getContent()}
-
-          {/* Footer Buttons */}
-          <div style={{ display: "flex", justifyContent: "flex-end", gap: 10, marginTop: 16 }}>
-            <button style={{
-              padding: "8px 20px", borderRadius: 4, border: "1px solid #dadce0",
-              background: "white", color: "#3c4043", fontSize: 13, fontWeight: 500, cursor: "pointer",
-            }}>Save</button>
-            <button style={{
-              padding: "8px 20px", borderRadius: 4, border: "none",
-              background: "#1967d2", color: "white", fontSize: 13, fontWeight: 600, cursor: "pointer",
-            }}>Navigate to Deals</button>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
+export default DocXchangeStructuredPrototype;
