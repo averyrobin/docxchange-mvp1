@@ -13,9 +13,9 @@ const DocXchangeStructuredPrototype = () => {
   const [nudgeData, setNudgeData] = useState(null);
 
   const applications = [
-    { id: 'onboarding', name: 'Business Onboarding', date: 'Started Jan 15, 2026', taskCount: 3 },
-    { id: 'cre-loan', name: 'CRE Loan', date: 'Started Feb 1, 2026', taskCount: 2 },
-    { id: 'loc', name: 'Line of Credit', date: 'Started Jan 28, 2026', taskCount: 0 },
+    { id: 'onboarding', name: 'Checking Account Application', date: 'Started Jan 15, 2026', taskCount: 3 },
+    { id: 'cre-loan', name: 'CRE Loan Application', date: 'Started Feb 1, 2026', taskCount: 2 },
+    { id: 'loc', name: 'LOC Application', date: 'Started Jan 28, 2026', taskCount: 0 },
   ];
 
   const requestedDocs = [
